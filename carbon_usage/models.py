@@ -14,7 +14,7 @@ class AbstractBaseModel(models.Model):
 
 class Usage(AbstractBaseModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    usage_type_id = models.IntegerField()
+    usage_type = models.ForeignKey("UsageTypes", on_delete=models.CASCADE)
     usage_at = models.DateTimeField()
     amount = models.FloatField()
 
