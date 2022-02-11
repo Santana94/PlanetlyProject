@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 
-from PlanetlyProject.settings import DEFAULT_MAX_LENGTH
+from PlanetlyProject.settings.base import DEFAULT_MAX_LENGTH
 
 
 class AbstractBaseModel(models.Model):
