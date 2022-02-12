@@ -19,7 +19,12 @@ def test_usage_is_valid(api_client):
     response = api_client.get(url)
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.data == []
+    assert response.data == {
+        "count": 0,
+        "next": None,
+        "previous": None,
+        "results": []
+    }
 
 
 def test_usage_lists_objects(api_client):
@@ -28,16 +33,21 @@ def test_usage_lists_objects(api_client):
     response = api_client.get(url)
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.data == [
-        {
-            "id": usage.id,
-            "user": usage.user.id,
-            "usage_type": usage.usage_type.id,
-            "usage_at": usage.usage_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "amount": usage.amount,
-        }
-        for usage in usages
-    ]
+    assert response.data == {
+        "count": 5,
+        "next": None,
+        "previous": None,
+        "results": [
+            {
+                "id": usage.id,
+                "user": usage.user.id,
+                "usage_type": usage.usage_type.id,
+                "usage_at": usage.usage_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                "amount": usage.amount,
+            }
+            for usage in usages
+        ]
+    }
 
 
 def test_usage_retrieve_object(api_client):
@@ -144,38 +154,165 @@ def test_usage_types_is_valid(api_client):
     response = api_client.get(url)
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.data == [
-        {
+    assert response.data == {
+        "count": 5,
+        "next": None,
+        "previous": None,
+        "results": [
+            {
+                "id": 100,
+                "name": "electricity",
+                "unit": "kwh",
+                "factor": 1.5
+            },
+            {
+                "id": 101,
+                "name": "water",
+                "unit": "kg",
+                "factor": 26.93
+            },
+            {
+                "id": 102,
+                "name": "heating",
+                "unit": "kwh",
+                "factor": 3.892
+            },
+            {
+                "id": 103,
+                "name": "heating",
+                "unit": "l",
+                "factor": 8.57
+            },
+            {
+                "id": 104,
+                "name": "heating",
+                "unit": "m3",
+                "factor": 19.456
+            },
+        ]
+    }
+
+
+def test_usage_types_name_ordering(api_client):
+    url = reverse('carbon-usage:usage_types-list')
+    response = api_client.get(f"{url}?ordering=name")
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == {
+        "count": 5,
+        "next": None,
+        "previous": None,
+        "results": [
+            {
+                "id": 100,
+                "name": "electricity",
+                "unit": "kwh",
+                "factor": 1.5
+            },
+            {
+                "id": 102,
+                "name": "heating",
+                "unit": "kwh",
+                "factor": 3.892
+            },
+            {
+                "id": 103,
+                "name": "heating",
+                "unit": "l",
+                "factor": 8.57
+            },
+            {
+                "id": 104,
+                "name": "heating",
+                "unit": "m3",
+                "factor": 19.456
+            },
+            {
+                "id": 101,
+                "name": "water",
+                "unit": "kg",
+                "factor": 26.93
+            },
+        ]
+    }
+
+
+@pytest.mark.parametrize("filters, expected_data, expected_count", [
+    (
+        "name=electricity",
+        [{
             "id": 100,
             "name": "electricity",
             "unit": "kwh",
             "factor": 1.5
-        },
-        {
+        }],
+        1
+    ),
+    (
+        "name=WRONG",
+        [],
+        0
+    ),
+    (
+        "name=heating",
+        [
+            {
+                "id": 102,
+                "name": "heating",
+                "unit": "kwh",
+                "factor": 3.892
+            },
+            {
+                "id": 103,
+                "name": "heating",
+                "unit": "l",
+                "factor": 8.57
+            },
+            {
+                "id": 104,
+                "name": "heating",
+                "unit": "m3",
+                "factor": 19.456
+            }
+        ],
+        3
+    ),
+    (
+        "name=water",
+        [{
             "id": 101,
             "name": "water",
             "unit": "kg",
             "factor": 26.93
-        },
-        {
-            "id": 102,
-            "name": "heating",
-            "unit": "kwh",
-            "factor": 3.892
-        },
-        {
-            "id": 103,
-            "name": "heating",
-            "unit": "l",
-            "factor": 8.57
-        },
-        {
-            "id": 104,
-            "name": "heating",
-            "unit": "m3",
-            "factor": 19.456
-        },
-    ]
+        }],
+        1
+    ),
+    (
+        "unit=kwh",
+        [
+            {
+                "id": 100,
+                "name": "electricity",
+                "unit": "kwh",
+                "factor": 1.5
+            },
+            {
+                "id": 102,
+                "name": "heating",
+                "unit": "kwh",
+                "factor": 3.892
+            }
+        ],
+        2
+    ),
+])
+def test_usage_types_with_filters(api_client, filters, expected_data, expected_count):
+    url = reverse('carbon-usage:usage_types-list')
+    response = api_client.get(f"{url}?{filters}")
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data["count"] == expected_count
+    assert response.data["results"] == expected_data
 
 
 def test_usage_types_retrieve_object(api_client):

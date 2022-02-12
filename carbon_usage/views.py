@@ -12,6 +12,7 @@ class UsageViewSet(viewsets.ModelViewSet):
     serializer_class = UsageSerializer
     queryset = Usage.objects.all()
     permission_classes = (IsAuthenticated,)
+    filterset_fields = ['user', 'usage_type', 'usage_at', 'amount']
 
 
 class UsageTypesViewSet(viewsets.ModelViewSet):
@@ -21,3 +22,4 @@ class UsageTypesViewSet(viewsets.ModelViewSet):
     serializer_class = UsageTypesSerializer
     queryset = UsageTypes.objects.all()
     permission_classes = (IsAuthenticated,)
+    filterset_fields = ['name', 'unit', 'factor']
