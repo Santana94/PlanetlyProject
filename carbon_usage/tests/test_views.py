@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 from django.urls import reverse
 from rest_framework import status
@@ -48,6 +50,70 @@ def test_usage_lists_objects(api_client):
             for usage in usages
         ]
     }
+
+
+@pytest.mark.parametrize("filters, expected_count, extra_data", [
+    (
+        "",
+        10,
+        {}
+    ),
+    (
+        "user=42342",
+        5,
+        {"user_id": 42342}
+    ),
+    (
+        "usage_type=102",
+        5,
+        {"usage_type_id": 102}
+    ),
+    (
+        "min_usage_at=2021-10-10T15:13",
+        5,
+        {"usage_at": datetime(2021, 10, 10, 15, 13, 34, 54543)}
+    ),
+    (
+        "max_usage_at=2019-11-10T15:13",
+        5,
+        {"usage_at": datetime(2019, 10, 10, 15, 13, 34, 54543)}
+    ),
+    (
+        "min_amount=12",
+        5,
+        {"amount": 15}
+    ),
+    (
+        "max_amount=5",
+        5,
+        {"amount": 3}
+    )
+])
+def test_usage_with_filters(api_client, filters, expected_count, extra_data):
+    carbon_usage_recipes.base_user.make(id=42342)
+    usages = carbon_usage_recipes.base_usage.make(_quantity=5, **extra_data)
+    not_filtered_usages = carbon_usage_recipes.base_usage.make(
+        _quantity=5,
+        usage_at=datetime(2020, 10, 10, 15, 13, 34, 54543),
+        amount=10
+    )
+    if not extra_data:
+        usages = [*usages, *not_filtered_usages]
+    url = reverse('carbon-usage:usage-list')
+    response = api_client.get(f"{url}?{filters}")
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data["count"] == expected_count
+    assert response.data["results"] == [
+        {
+            "id": usage.id,
+            "user": usage.user.id,
+            "usage_type": usage.usage_type.id,
+            "usage_at": usage.usage_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "amount": usage.amount,
+        }
+        for usage in usages
+    ]
 
 
 def test_usage_retrieve_object(api_client):
