@@ -2,7 +2,7 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 from . import mommy_recipes as carbon_usage_recipes
-from ..models import Usage
+from ..models import Usage, UsageTypes
 
 pytestmark = pytest.mark.django_db
 
@@ -176,3 +176,77 @@ def test_usage_types_is_valid(api_client):
             "factor": 19.456
         },
     ]
+
+
+def test_usage_types_retrieve_object(api_client):
+    url = reverse('carbon-usage:usage_types-detail', kwargs={"pk": 101})
+    response = api_client.get(url)
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == {
+        "id": 101,
+        "name": "water",
+        "unit": "kg",
+        "factor": 26.93
+    }
+
+
+def test_usage_types_update_object_with_put(api_client):
+    url = reverse('carbon-usage:usage_types-detail', kwargs={"pk": 101})
+    data = {
+        "name": "water",
+        "unit": "g",
+        "factor": 6.45
+    }
+    response = api_client.put(url, data=data)
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == {
+        "id": 101,
+        **data
+    }
+
+
+def test_usage_types_update_object_with_patch(api_client):
+    url = reverse('carbon-usage:usage_types-detail', kwargs={"pk": 101})
+    data = {
+        "unit": "g",
+        "factor": 6.45
+    }
+    response = api_client.patch(url, data=data)
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == {
+        "id": 101,
+        "name": "water",
+        **data
+    }
+
+
+def test_usage_types_delete_object(api_client):
+    url = reverse('carbon-usage:usage_types-detail', kwargs={"pk": 101})
+
+    assert UsageTypes.objects.count() == 5
+
+    response = api_client.delete(url)
+
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+    assert UsageTypes.objects.count() == 4
+
+
+def test_usage_types_create_object(api_client):
+    url = reverse('carbon-usage:usage_types-list')
+    data = {
+        "name": "cooling",
+        "unit": "m3",
+        "factor": 5.34
+    }
+    assert UsageTypes.objects.count() == 5
+    response = api_client.post(url, data=data)
+
+    assert response.status_code == status.HTTP_201_CREATED
+    assert UsageTypes.objects.count() == 6
+    usage_type = UsageTypes.objects.last()
+    assert usage_type.name == data["name"]
+    assert usage_type.unit == data["unit"]
+    assert usage_type.factor == data["factor"]
