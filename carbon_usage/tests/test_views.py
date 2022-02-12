@@ -305,6 +305,48 @@ def test_usage_types_name_ordering(api_client):
         ],
         2
     ),
+    (
+        "min_factor=8",
+        [
+            {
+                "id": 101,
+                "name": "water",
+                "unit": "kg",
+                "factor": 26.93
+            },
+            {
+                "id": 103,
+                "name": "heating",
+                "unit": "l",
+                "factor": 8.57
+            },
+            {
+                "id": 104,
+                "name": "heating",
+                "unit": "m3",
+                "factor": 19.456
+            }
+        ],
+        3
+    ),
+    (
+        "max_factor=8",
+        [
+            {
+                "id": 100,
+                "name": "electricity",
+                "unit": "kwh",
+                "factor": 1.5
+            },
+            {
+                "id": 102,
+                "name": "heating",
+                "unit": "kwh",
+                "factor": 3.892
+            },
+        ],
+        2
+    )
 ])
 def test_usage_types_with_filters(api_client, filters, expected_data, expected_count):
     url = reverse('carbon-usage:usage_types-list')
