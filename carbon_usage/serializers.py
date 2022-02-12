@@ -6,10 +6,10 @@ from carbon_usage.models import Usage, UsageTypes
 class UsageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usage
-        fields = ['user', 'usage_type', 'usage_at', 'amount']
+        fields = ['id', 'user', 'usage_type', 'usage_at', 'amount']
 
 
 class UsageTypesSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsageTypes
-        fields = ['name', 'unit', 'factor']
+        fields = ['id', 'name', 'unit', 'factor']
