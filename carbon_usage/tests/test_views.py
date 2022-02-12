@@ -126,6 +126,11 @@ def test_usage_lists_objects(api_client, ordering_filter, ordering_field):
         {"usage_at": datetime(2019, 10, 10, 15, 13, 34, 54543)}
     ),
     (
+        "min_usage_at=2021-10-10T15:13&max_usage_at=2021-11-10T15:13",
+        5,
+        {"usage_at": datetime(2021, 10, 11, 15, 13, 34, 54543)}
+    ),
+    (
         "min_amount=12",
         5,
         {"amount": 15}
