@@ -52,6 +52,53 @@ def test_usage_lists_objects(api_client):
     }
 
 
+@pytest.mark.parametrize("ordering_filter, ordering_field", [
+    (
+        "ordering=user",
+        "user"
+    ),
+    (
+        "",
+        "id"
+    ),
+    (
+        "ordering=user",
+        "user"
+    ),
+    (
+        "ordering=usage_type",
+        "usage_type"
+    ),
+    (
+        "ordering=usage_at",
+        "usage_at"
+    ),
+    (
+        "ordering=amount",
+        "amount"
+    ),
+])
+def test_usage_lists_objects(api_client, ordering_filter, ordering_field):
+    usages = carbon_usage_recipes.base_usage.make(_quantity=5)
+    url = reverse('carbon-usage:usage-list')
+    response = api_client.get(f"{url}?{ordering_filter}")
+
+    assert response.status_code == status.HTTP_200_OK
+    expected_usages = [
+        {
+            "id": usage.id,
+            "user": usage.user.id,
+            "usage_type": usage.usage_type.id,
+            "usage_at": usage.usage_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "amount": usage.amount,
+        }
+        for usage in usages
+    ]
+    assert sorted(response.data["results"], key=lambda x: x[ordering_field]) == sorted(
+        expected_usages, key=lambda x: x[ordering_field]
+    )
+
+
 @pytest.mark.parametrize("filters, expected_count, extra_data", [
     (
         "",
