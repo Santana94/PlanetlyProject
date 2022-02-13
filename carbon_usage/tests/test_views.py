@@ -545,6 +545,7 @@ def test_usage_types_create_object(api_client):
     assert response.status_code == status.HTTP_201_CREATED
     assert UsageTypes.objects.count() == 6
     usage_type = UsageTypes.objects.last()
+    assert usage_type.id == 105
     assert usage_type.name == data["name"]
     assert usage_type.unit == data["unit"]
     assert usage_type.factor == data["factor"]
