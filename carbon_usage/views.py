@@ -11,7 +11,7 @@ class UsageViewSet(viewsets.ModelViewSet):
     A viewset for viewing and editing Usage instances.
     """
     serializer_class = UsageSerializer
-    queryset = Usage.objects.all()
+    queryset = Usage.objects.select_related("usage_type", "user").all()
     permission_classes = (IsAuthenticated,)
     filterset_class = UsageFilter
 

@@ -29,10 +29,11 @@ def test_usage_is_valid(api_client):
     }
 
 
-def test_usage_lists_objects(api_client):
+def test_usage_lists_objects(api_client, django_assert_num_queries):
     usages = carbon_usage_recipes.base_usage.make(_quantity=5)
     url = reverse('carbon-usage:usage-list')
-    response = api_client.get(url)
+    with django_assert_num_queries(3):
+        response = api_client.get(url)
 
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
@@ -78,7 +79,7 @@ def test_usage_lists_objects(api_client):
         "amount"
     ),
 ])
-def test_usage_lists_objects(api_client, ordering_filter, ordering_field):
+def test_usage_lists_objects_ordering(api_client, ordering_filter, ordering_field):
     usages = carbon_usage_recipes.base_usage.make(_quantity=5)
     url = reverse('carbon-usage:usage-list')
     response = api_client.get(f"{url}?{ordering_filter}")
