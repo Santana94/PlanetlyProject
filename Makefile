@@ -42,7 +42,7 @@ build:
 	docker-compose build
 
 up:
-	docker-compose up
+	docker-compose up -d
 
 down:
 	docker-compose down
@@ -55,3 +55,6 @@ test:
 
 docker-migrate:
 	docker-compose run web python3 manage.py migrate
+
+createsuperuser:
+	docker-compose run web python3 manage.py createsuperuser
